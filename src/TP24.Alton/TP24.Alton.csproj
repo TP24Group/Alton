@@ -1,9 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <PackageId>Alton</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>TP24</Authors>
+    <Company>TP24 Group</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>A package for exposing APIs to manage AWS DLQs</Description>
+    <PackageTags>alton;aws sqs;sqs</PackageTags>
+    <RepositoryUrl>https://github.com/TP24Group/Alton</RepositoryUrl>
+  </PropertyGroup>
 
 </Project>
