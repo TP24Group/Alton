@@ -31,7 +31,6 @@ public static class AltonExtensions
         var policies = string.IsNullOrEmpty(policyName) ? Array.Empty<string>() : new[] {policyName};
         var endpointsList = new List<IEndpointConventionBuilder>
         {
-            endpoints.MapPost(UrlCombine(options.BaseRoute, "/queues/{queueName}/replay"), HandleReplay).RequireAuthorization(policies),
             endpoints.MapPost(UrlCombine(options.BaseRoute, "/queues/{queueName}/redrive-all"), HandleRedriveAll).RequireAuthorization(policies),
             endpoints.MapGet(UrlCombine(options.BaseRoute, "/queue-states"), HandleState).RequireAuthorization(policies),
             endpoints.MapPost(UrlCombine(options.BaseRoute, "/queues/{queueName}/retrieve-messages"), HandleRetrieveMessages).RequireAuthorization(policies),
@@ -84,12 +83,6 @@ public static class AltonExtensions
     }
 
     private static async Task HandleRedriveAll(HttpContext context, string queueName)
-    {
-        context.Response.StatusCode = 204;
-        await Task.CompletedTask;
-    }
-
-    private static async Task HandleReplay(HttpContext context, string queueName)
     {
         context.Response.StatusCode = 204;
         await Task.CompletedTask;
