@@ -13,7 +13,12 @@
     <Description>A package for exposing APIs to manage AWS DLQs</Description>
     <PackageTags>alton;aws sqs;sqs</PackageTags>
     <RepositoryUrl>https://github.com/TP24Group/Alton</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
