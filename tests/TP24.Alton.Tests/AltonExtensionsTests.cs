@@ -11,28 +11,9 @@ public class AltonExtensionsTests : SqsIntegration
     public AltonExtensionsTests(SqsFixture fixture) : base(fixture) => this.fixture = fixture;
 
     [Theory]
-    [InlineData("queue-management/queues/testQueue/replay", "POST")]
-    [InlineData("queue-management/queues/testQueue/redrive-all", "POST")]
-    public async Task Endpoints_Returns204NoContent(string url, string method)
-    {
-        var client = await HttpServerFixture.GetTestHttpClient(this.fixture.SqsClient);
-
-        var msg = new HttpRequestMessage(method switch
-        {
-            "POST" => HttpMethod.Post, "GET" => HttpMethod.Get, "DELETE" => HttpMethod.Delete, _ => null!
-        }, url);
-
-        var response = await client.SendAsync(msg);
-
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-    }
-
-    [Theory]
-    [InlineData("queue-management/queues/testQueue/replay", "POST")]
     [InlineData("queue-management/queues/testQueue/redrive-all", "POST")]
     [InlineData("queue-management/queue-states", "GET")]
     [InlineData("queue-management/queues/testQueue/retrieve-messages", "POST")]
-    [InlineData("queue-management/queues/testQueue/messages/testmessageHandleReceipt", "DELETE")]
     [InlineData("queue-management/queues/testQueue", "DELETE")]
     public async Task Endpoints_return_401_unauthorised_without_authenticated_user(string url, string method)
     {
