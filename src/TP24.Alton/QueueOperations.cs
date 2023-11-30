@@ -86,6 +86,34 @@ internal static class QueueOperations
         }
     }
 
+    public static async Task RedriveAll(string queueName, AltonOptions options, SqsClientResolver sqsClientResolver, HttpContext context)
+    {
+        if (!options.QueuesToManage.TryGetValue(queueName, out var queueUrls) || queueUrls.DeadLetterQueueUrl == null)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            return;
+        }
+
+        var sqsClient = sqsClientResolver(queueUrls);
+
+        var queueArn = (await sqsClient.GetQueueAttributesAsync(
+            queueUrls.QueueUrl, new List<string> { "QueueArn" })).QueueARN;
+
+        var dlqArn = (await sqsClient.GetQueueAttributesAsync(
+            queueUrls.DeadLetterQueueUrl, new List<string> { "QueueArn" })).QueueARN;
+
+        var deleteMessageResponse = await sqsClient.StartMessageMoveTaskAsync(new StartMessageMoveTaskRequest()
+        {
+            DestinationArn = queueArn,
+            SourceArn = dlqArn
+        });
+
+        if (deleteMessageResponse.HttpStatusCode != HttpStatusCode.OK)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+        }
+    }
+
     private static async Task<QueueStateResponse> GetState(string queueName, AltonOptions options, SqsClientResolver sqsClientResolver)
     {
         var queueUrls = options.QueuesToManage[queueName];

@@ -84,8 +84,8 @@ public static class AltonExtensions
 
     private static async Task HandleRedriveAll(HttpContext context, string queueName)
     {
-        context.Response.StatusCode = 204;
-        await Task.CompletedTask;
+        var sqsClientResolver = context.RequestServices.GetRequiredService<SqsClientResolver>();
+        await QueueOperations.RedriveAll(queueName, Options, sqsClientResolver, context);
     }
 
     private static string UrlCombine(string url1, string url2)
