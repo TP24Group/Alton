@@ -13,8 +13,17 @@ internal static class QueueOperations
     public static async Task GetOverallState(AltonOptions options, SqsClientResolver sqsClientResolver, HttpContext context)
     {
         var queueStates = options.QueuesToManage.Select(altonQueueComponent => GetState(altonQueueComponent.Key, options, sqsClientResolver));
-
         var responses = await Task.WhenAll(queueStates);
+
+        if (context.Request.Query.TryGetValue("hasDlqMessages", out var hasDlqMessagesValue))
+        {
+            if (bool.TryParse(hasDlqMessagesValue, out var hasDlqMessages))
+            {
+                responses = hasDlqMessages
+                    ? responses.Where(response => response is {MessagesInDeadLetterQueue: > 0}).ToArray()
+                    : responses.Where(response => response is {MessagesInDeadLetterQueue: 0}).ToArray();
+            }
+        }
 
         await context.Response.WriteJsonResponse(responses, context.RequestAborted);
     }
