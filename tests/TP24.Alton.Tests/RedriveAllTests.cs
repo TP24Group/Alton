@@ -3,7 +3,6 @@ namespace TP24.Alton.Tests;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using global::Alton.Tests.Sdk;
 using Sdk;
 using Shouldly;
 
@@ -16,9 +15,8 @@ public class RedriveAllTests : SqsIntegration
     [Fact]
     public async Task Redrive_all_starts_move_messages_task()
     {
-        var sqsInterceptor = new SqsInterceptor(this.fixture.SqsClient);
         var queue = await this.fixture.ProvisionQueue();
-        var client = await HttpServerFixture.GetTestHttpClient(sqsInterceptor, configureOptions: options =>
+        var client = await HttpServerFixture.GetTestHttpClient(this.fixture.SqsClient, configureOptions: options =>
         {
             options.QueuesToManage = new Dictionary<string, AltonQueueComponent>
             {
@@ -33,13 +31,16 @@ public class RedriveAllTests : SqsIntegration
         var response = await client.PostAsync($"queue-management/queues/{queue.QueueName}/redrive-all", null);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var queueAttributes = await this.fixture.SqsClient.GetQueueAttributesAsync(queue.QueueUrl, new List<string> {"QueueArn"});
-        var dlqAttributes = await this.fixture.SqsClient.GetQueueAttributesAsync(queue.DlqUrl, new List<string> {"QueueArn"});
+        var receiveMessageResponse1 = await this.fixture.SqsClient.ReceiveMessageAsync(queue.QueueUrl);
+        var receiveMessageResponse2 = await this.fixture.SqsClient.ReceiveMessageAsync(queue.QueueUrl);
+        var receiveMessageResponse3 = await this.fixture.SqsClient.ReceiveMessageAsync(queue.QueueUrl);
+        var messages = receiveMessageResponse1.Messages.Concat(receiveMessageResponse2.Messages).Concat(receiveMessageResponse3.Messages).ToList();
 
-        sqsInterceptor.MessageMoveTasks.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
-            task => task.SourceArn.ShouldBe(dlqAttributes.QueueARN),
-            task => task.DestinationArn.ShouldBe(queueAttributes.QueueARN),
-            task => task.MaxNumberOfMessagesPerSecond.ShouldBe(0));
+        messages.ShouldSatisfyAllConditions(
+            () => messages.Count.ShouldBe(3),
+            () => messages.ShouldContain(m => m.Body == "test1"),
+            () => messages.ShouldContain(m => m.Body == "test2"),
+            () => messages.ShouldContain(m => m.Body == "test3"));
     }
 
     [Fact]
